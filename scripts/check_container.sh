@@ -1,0 +1,1 @@
+docker ps -f "name=template-app-$1" -f "status=running" -q

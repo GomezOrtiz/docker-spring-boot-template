@@ -1,0 +1,6 @@
+CREATE TABLE messages
+(
+    id uuid NOT NULL PRIMARY KEY,
+    code VARCHAR(255) NOT NULL UNIQUE,
+    text VARCHAR(255) NOT NULL
+);

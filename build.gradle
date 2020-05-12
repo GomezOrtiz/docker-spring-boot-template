@@ -1,0 +1,113 @@
+plugins {
+	id 'org.springframework.boot' version '2.2.6.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+	id 'java'
+}
+
+group = 'com.gomezortiz'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+configurations {
+	developmentOnly
+	runtimeClasspath {
+		extendsFrom developmentOnly
+	}
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+sourceSets {
+	main {
+		java { srcDirs = ['src/main'] }
+		resources { srcDirs = ['src/main/resources'] }
+	}
+
+	test {
+		java { srcDirs = ['src/test'] }
+		resources { srcDirs = ['src/test/resources'] }
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+
+	// WEB
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// AMQP
+	implementation 'org.springframework.boot:spring-boot-starter-amqp'
+
+	// PERSISTENCE
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'org.postgresql:postgresql'
+	implementation 'org.flywaydb:flyway-core'
+
+	// DEVELOPMENT
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+
+	// TESTING
+	testImplementation 'org.springframework.amqp:spring-rabbit-test'
+	testRuntimeOnly 'com.h2database:h2:1.4.200'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+def isContainerRunning(container) {
+	def sout = new ByteArrayOutputStream()
+	exec {
+		commandLine "./scripts/check_container.sh", container
+		standardOutput = sout
+	}
+	return sout.toString() != ""
+}
+
+def runContainers(containers) {
+	def downContainers = ""
+	containers.each {
+		def container = it
+		println "Checking if container ${container} is running..."
+		if(!isContainerRunning(container)) {
+			println "Container ${container} is not running."
+			downContainers += "${container} "
+		}
+	}
+	if(!downContainers.isBlank()) {
+		exec {
+			println "Running containers ${downContainers.trim()} before bootRun..."
+			commandLine "./scripts/run_container.sh", downContainers
+		}
+	}
+}
+
+task runDebug() {
+	description "Runs the app with port 5005 listening for a remote debugger. " +
+			"When developing with Docker, enables debugging in your IDE of choice " +
+			"by attaching a remote debugger to that port"
+	doFirst() {
+		println "Running app in remote debugging mode... " +
+				"For it to work, you must attach a remote debugger to port 5005 in your IDE"
+	}
+	finalizedBy(bootRun)
+}
+
+bootRun {
+	doFirst {
+		if(runDebug.state.executed) {
+			jvmArgs=["-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"]
+		} else {
+			runContainers(["postgres", "adminer", "rabbit"])
+		}
+	}
+}
+
+test {
+	useJUnitPlatform()
+}

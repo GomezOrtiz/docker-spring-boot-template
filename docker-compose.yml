@@ -1,0 +1,74 @@
+version: '3.0'
+services:
+  app:
+    container_name: template-app-dev
+    image: gradle:jdk11
+    expose:
+      - 5005
+    ports:
+      - 8080:8080
+      - 5005:5005
+    volumes:
+    - ./src:/home/app/src
+    - ./build.gradle:/home/app/build.gradle
+    - ./settings.gradle:/home/app/settings.gradle
+    networks:
+      - backend
+      - broker
+    depends_on:
+      - postgres
+      - rabbit
+    environment:
+      - WELCOME_MESSAGE=Welcome, Docker user
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/templatedb
+      - SPRING_RABBITMQ_HOST=rabbit
+      - SPRING_RABBITMQ_PORT=5672
+    working_dir: /home/app
+    command: bash -c "gradle --stop & gradle build -x test --continuous --quiet & gradle runDebug"
+    restart: on-failure:5
+
+  postgres:
+    container_name: template-app-postgres
+    image: postgres:12.2-alpine
+    ports:
+      - 5060:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend
+      - admin
+    environment:
+      - POSTGRES_DB=templatedb
+      - POSTGRES_USER=templateapp
+      - POSTGRES_PASSWORD=t3mpl4t34pp
+    restart: unless-stopped
+
+  adminer:
+    container_name: template-app-adminer
+    image: adminer:4.7.6
+    ports:
+      - 9090:8080
+    networks:
+      - admin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  rabbit:
+    container_name: template-app-rabbit
+    image: rabbitmq:3.8.3-management-alpine
+    ports:
+      - 15673:15672
+      - 5673:5672
+    networks:
+      - broker
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+networks:
+  backend:
+  broker:
+  admin:
+volumes:
+  postgres-data:
