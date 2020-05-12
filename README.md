@@ -2,6 +2,9 @@
 
 #### Template for a dockerized Spring Boot app with hot-reloading and remote debugging in development and continuous delivery to Amazon Web Services with a GitHub Actions custom workflow
 
+![CI](https://github.com/GomezOrtiz/docker-spring-boot-template/workflows/CI/badge.svg)
+![CD](https://github.com/GomezOrtiz/docker-spring-boot-template/workflows/CD/badge.svg)
+
 ### DEVELOPMENT
 
 When using **Docker containers for Spring Boot** development, one of the main caveats is losing hot-reloading and debugging capabilities. We have addressed this issue by leveraging Docker volumes to allow Gradle to detect any change in source code and rebuild the app in real-time inside the container. 
