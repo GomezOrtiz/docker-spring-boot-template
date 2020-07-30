@@ -1,9 +1,10 @@
-# Spring Boot CI/CD with Docker, GitHub Actions and AWS
+# Spring Boot CI/CD with Docker, GitHub Actions, Amazon Elastic Container Service (ECS) and Google Kubernetes Engine (EKR)
 
-#### Template for a dockerized Spring Boot app with hot-reloading and remote debugging in development and continuous delivery to Amazon Web Services with a GitHub Actions custom workflow
+#### Template for a dockerized Spring Boot app with hot-reloading and remote debugging in development and continuous delivery to Amazon Web Services and Google Cloud with a GitHub Actions custom workflow
 
 ![CI](https://github.com/GomezOrtiz/docker-spring-boot-template/workflows/CI/badge.svg)
 ![CD](https://github.com/GomezOrtiz/docker-spring-boot-template/workflows/CD/badge.svg)
+![gke](https://github.com/GomezOrtiz/docker-spring-boot-template/workflows/gke/badge.svg)
 
 ### DEVELOPMENT
 
@@ -27,11 +28,13 @@ Please note that **you can also run your app as usual from your IDE** of choice 
 
 ### PRODUCTION: CONTINUOUS INTEGRATION AND DELIVERY
 
-We have defined two GitHub Workflows for CI and CD, respectively. The first will run the tests any time a push or pull request is made to any branch. The second will build and image of your app for production any time a new release is created in GitHub,  publish that image to Amazon ECR and deploy it to Amazon ECS as a task in a predefined service and cluster (you can modifiy any configuration in .github/workflows/cd.yml and task-definition.json). 
+We have defined three GitHub Workflows for CI, CD and EKR. The first will run the tests any time a push or pull request is made to any branch. The second will build and image of your app for production any time a new release is created in GitHub, publish that image to Amazon ECR and deploy it to Amazon ECS as a task in a predefined service and cluster (you can modifiy any configuration in .github/workflows/cd.yml and task-definition.json). The third will also build and image of your app for production with each release, publish that image to Google Container Registry and deploy it to Google Kubernetes Engine (you can find K8s objects in the /k8s folder).
 
-For all this to work, you also must define two variables in the Secrets tab of your GitHub repository settings: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+For all this to work, you also must define four variables in the Secrets tab of your GitHub repository settings: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, GKE_CLUSTER and GKE_SA_KEY.
 
 Please note that the task-definition.json, which describes how the container is going to be created in Amazon ECS, is referencing some secrets that are required for the production application to run properly (Postgres and RabbitMQ login and configuration data). [You must provide your own values by using](https://aws.amazon.com/es/premiumsupport/knowledge-center/ecs-data-security-container-task/), for example, AWS Systems Manager Parameter Store (which is included in the free tier) or AWS Secrets Manager (which is a paid service).
+
+Also note that development.yml file, describing K8s deployment config, references a Secret object which must exist for the app to run properly. You should include in this Secret the same key-value pairs that you already introduced in task-definition.json.
 
 ### SOMETHING TO SHARE?
 
