@@ -30,3 +30,7 @@ build/
 !**/src/main/**
 !**/src/test/**
 !gradle-wrapper.jar
+
+### Kubernetes ###
+secret.yml
+key.json

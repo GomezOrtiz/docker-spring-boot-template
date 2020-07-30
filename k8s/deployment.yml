@@ -1,0 +1,34 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: template-app-deployment
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  minReadySeconds: 5
+  template:
+    metadata:
+      labels:
+        app: template-app
+    spec:
+      containers:
+      - name: docker-spring-boot-template
+        image: gcr.io/PROJECT_ID/IMAGE:TAG
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 100m
+        env:
+          - name: SPRING_RABBITMQ_PORT
+            value: "5672"
+          - name: WELCOME_MESSAGE
+            value: "Welcome, GKE user"
+        envFrom:
+          - secretRef:
+              name: template-app-secret
