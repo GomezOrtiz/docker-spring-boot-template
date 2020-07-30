@@ -1,4 +1,4 @@
-name: K8s
+name: gke
 
 on:
   release:
@@ -16,20 +16,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
       
       - name: GCloud CLI setup
-      - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: '290.0.1'
           service_account_key: ${{ secrets.GKE_SA_KEY }}
           project_id: ${{ secrets.GKE_CLUSTER }}
 
       - name: Configure Docker to use GCloud CLI to authenticate
-      - run: gcloud --quiet auth configure-docker
+        run: gcloud --quiet auth configure-docker
 
       - name: Get the GKE cluster credentials
-      - run: gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
+        run: gcloud container clusters get-credentials "$GKE_CLUSTER" --zone "$GKE_ZONE"
 
       - name: Get the version
         id: get_version
